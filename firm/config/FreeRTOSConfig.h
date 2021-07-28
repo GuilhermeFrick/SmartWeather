@@ -49,7 +49,7 @@
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
   #include <stdint.h>
-  extern uint32_t SystemCoreClock;
+  //extern uint32_t SystemCoreClock;
 #endif
 //extern void TickRTOSDebugTimer(uint32_t increment);
 //extern volatile uint32_t RTOS_debug_tick;
@@ -62,7 +62,7 @@
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
 #define configUSE_IDLE_HOOK                      0
 #define configUSE_TICK_HOOK                      0
-#define configCPU_CLOCK_HZ                       (SystemCoreClock)
+#define configCPU_CLOCK_HZ                       ( ( unsigned long ) 20000000 )
 //#define configSYSTICK_CLOCK_HZ                   (SystemCoreClock/8)
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 7 )
