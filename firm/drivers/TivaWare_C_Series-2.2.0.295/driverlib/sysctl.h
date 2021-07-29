@@ -50,7 +50,7 @@
 extern "C"
 {
 #endif
-
+#include <stdbool.h>
 //*****************************************************************************
 //
 // The following are values that can be passed to the

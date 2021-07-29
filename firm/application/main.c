@@ -1,73 +1,40 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "hw_memmap.h"
-#include "debug.h"
-#include "gpio_driver.h"
-#include "sysctl.h"
-//*****************************************************************************
-#ifdef DEBUG
-void
-__error__(char *pcFilename, uint32_t ui32Line)
-{
-    while(1);
-}
-#endif
+#include <stdio.h>
 
-//*****************************************************************************
-//
-// Blink the on-board LED.
-//
-//*****************************************************************************
-int
-main(void)
+#include "uart_driver.h"
+#include "gpio_driver.h"
+#include "uc_driver.h"
+#include  "sysclk_driver.h"
+
+
+
+
+
+int main(void)
 {
     volatile uint32_t ui32Loop;
 
-    //
-    // Enable the GPIO port that is used for the on-board LED.
-    //
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    UcDriverInit();
 
-    //
-    // Check if the peripheral access is enabled.
-    //
-    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
-    {
-    }
+    GpioClockEnable(PORTF);
+    GpioInitLed(PORTF,LED_BLUE);
+   
 
-    //
-    // Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
-    // enable the GPIO pin for digital function.
-    //
-    GpioInitOutput(PORTF,PIN3);
-
-    //
-    // Loop forever.
-    //
     while(1)
     {
-        //
-        // Turn on the LED.
-        //
-				GpioWritePin(PORTF,PIN3,GPIO_SET);
+ 
+		GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
 
-        //
-        // Delay for a bit.
-        //
-        for(ui32Loop = 0; ui32Loop < 2000; ui32Loop++)
-        {
-        }
-
-        //
-        // Turn off the LED.
-        //
-        GpioWritePin(PORTF,PIN3,GPIO_RESET);
-
-        //
-        // Delay for a bit.
-        //
         for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++)
         {
         }
+        printf("clock:%d\n\r",SystemCoreClock());
+				GpioWriteLed(PORTF,LED_BLUE,GPIO_RESET);
+
+        for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++)
+        {
+        }
+		
     }
 }
