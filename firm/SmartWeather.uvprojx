@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>rvmdk PART_TM4C123GH6PM TARGET_IS_TM4C123_RB1</Define>
               <Undefine></Undefine>
-              <IncludePath>.\middlewares\FreeRTOS\Source\include;.\middlewares\FreeRTOS\Source\portable\RVDS\ARM_CM4F;.\middlewares;.\config;.\application\hw_driver;.\RTE\Device\TM4C123GH6PM;.\drivers\TivaWare_C_Series-2.2.0.295\tools;.\drivers\TivaWare_C_Series-2.2.0.295\inc;.\drivers\TivaWare_C_Series-2.2.0.295\utils;.\drivers\TivaWare_C_Series-2.2.0.295\driverlib;..\..\..\..</IncludePath>
+              <IncludePath>.\middlewares\FreeRTOS\Source\include;.\middlewares\FreeRTOS\Source\portable\RVDS\ARM_CM4F;.\middlewares;.\config;.\application\hw_driver;.\application\tasks;.\application\wrapper;.\RTE\Device\TM4C123GH6PM;.\drivers\TivaWare_C_Series-2.2.0.295\tools;.\drivers\TivaWare_C_Series-2.2.0.295\inc;.\drivers\TivaWare_C_Series-2.2.0.295\utils;.\drivers\TivaWare_C_Series-2.2.0.295\driverlib;..\..\..\..</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -395,9 +395,23 @@
         </Group>
         <Group>
           <GroupName>application/tasks</GroupName>
+          <Files>
+            <File>
+              <FileName>BlinkTask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\tasks\BlinkTask.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>application/wrapper</GroupName>
+          <Files>
+            <File>
+              <FileName>WrapperRTOS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\wrapper\WrapperRTOS.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>application/hw_driver</GroupName>

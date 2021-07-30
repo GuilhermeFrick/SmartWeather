@@ -74,6 +74,9 @@ __heap_limit
         THUMB
 		
 		EXTERN  UARTIntHandler
+		EXTERN  SysTickHandler
+		EXTERN	PendSV_Handler
+		EXTERN	SVC_Handler
 ;******************************************************************************
 ;
 ; The vector table.
@@ -92,11 +95,11 @@ __Vectors
         DCD     0                           ; Reserved
         DCD     0                           ; Reserved
         DCD     0                           ; Reserved
-        DCD     IntDefaultHandler           ; SVCall handler
+        DCD     SVC_Handler                 ; SVCall handler
         DCD     IntDefaultHandler           ; Debug monitor handler
         DCD     0                           ; Reserved
-        DCD     IntDefaultHandler           ; The PendSV handler
-        DCD     IntDefaultHandler           ; The SysTick handler
+        DCD     PendSV_Handler           	           ; The PendSV handler
+        DCD     SysTickHandler              ; The SysTick handler
         DCD     IntDefaultHandler           ; GPIO Port A
         DCD     IntDefaultHandler           ; GPIO Port B
         DCD     IntDefaultHandler           ; GPIO Port C
@@ -130,7 +133,7 @@ __Vectors
         DCD     IntDefaultHandler           ; GPIO Port F
         DCD     IntDefaultHandler           ; GPIO Port G
         DCD     IntDefaultHandler           ; GPIO Port H
-        DCD     IntDefaultHandler           ; UART2 Rx and Tx
+        DCD     IntDefaultHandler           ; UART2 Rx and Tx 
         DCD     IntDefaultHandler           ; SSI1 Rx and Tx
         DCD     IntDefaultHandler           ; Timer 3 subtimer A
         DCD     IntDefaultHandler           ; Timer 3 subtimer B
