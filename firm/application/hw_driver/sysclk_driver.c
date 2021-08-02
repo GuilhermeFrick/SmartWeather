@@ -10,8 +10,13 @@
  */
  
 #include <stdint.h>
+#include <stdio.h>
 #include "sysclk_driver.h"
 #include "sysctl.h"
+#include "systick.h"
+#include "interrupt.h"
+
+volatile uint32_t g_ui32Counter = 0;
 
 /**
  * @brief 
@@ -19,7 +24,16 @@
  */
 void SystemClockInit(void)
 {
-    SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);                 
+    
+
+    SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN); 
+    
+		//SysTickPeriodSet(SysCtlClockGet()); 
+    //IntMasterEnable();
+    //SysTickIntEnable();
+    //SysTickEnable(); 
+    //g_ui32Counter=0;
+
 }
 /**
  * @brief 
@@ -39,3 +53,5 @@ void SystemDeepSleepConfig(uint32_t config)
 {
     SysCtlDeepSleepClockSet(config);
 }
+
+

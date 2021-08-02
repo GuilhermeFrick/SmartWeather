@@ -11,6 +11,7 @@
 #include "gpio_driver.h"
 #include "sysclk_driver.h"
 #include "uart_driver.h"
+#include "adc_driver.h"
 
 struct uc_driver_info_s
 {
@@ -28,7 +29,11 @@ struct uc_driver_info_s
 
 void UcDriverInit(void)
 {
-    SystemClockInit();
-    Uart0Init();
+  
+	 ADC_Init(); 
+	SystemClockInit();
+  Uart0Init();
+	
+		
     UC_DRIVER.sys_clock = SystemCoreClock();
 }

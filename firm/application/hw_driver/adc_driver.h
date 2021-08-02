@@ -24,12 +24,12 @@ typedef enum
     ADC_MUTEX_GIVE_ERROR = -5, /**<Error giving the mutex*/
 } adc_ret_e;
 
-adc_ret_e ADC1_Init(void);
-adc_ret_e ADC1_Deinit(void);
-uint32_t  ADC1_GetChannelCount(void);
-adc_ret_e ADC_GetTemp(float *temperature);
-adc_ret_e ADC_GetVref(float *voltage);
-adc_ret_e ADC_GetVbat(float *voltage);
+adc_ret_e ADC_Init(void);
+//adc_ret_e ADC_Deinit(void);
+//uint32_t  ADC_GetChannelCount(void);
+adc_ret_e ADC_GetTemp(uint32_t *temperature);
+//adc_ret_e ADC_GetVref(float *voltage);
+//adc_ret_e ADC_GetVbat(float *voltage);
 adc_ret_e ADC_GetRaw(uint8_t channel, uint32_t *raw_value);
 adc_ret_e ADC_GetVoltage(uint8_t channel, float *voltage);
 

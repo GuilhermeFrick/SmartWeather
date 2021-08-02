@@ -15,6 +15,6 @@
 
 void SystemClockInit(void);
 uint32_t SystemCoreClock(void);
-void SystemDeepSleepConfig(uint32_t config);
+
 
 #endif

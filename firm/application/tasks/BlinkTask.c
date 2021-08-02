@@ -12,7 +12,10 @@
 #include "task.h"
 #include "BlinkTask.h"
 #include "gpio_driver.h"
-#include "WrapperRTOS.h"
+#include "adc_driver.h"
+
+
+
 
 
 #define BLINK_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
@@ -37,12 +40,19 @@ void BlinkTaskCreate(void)
 
 static void BlinkLedFunc(void *param)
 {
-  printf("%d TICK:",portTICK_RATE_MS);
+    uint32_t temp;
+    float volt;
 	while (1)
     {
-				GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
-        RTOSDelay(10);
+				
+		GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
+        vTaskDelay(500);
         GpioWriteLed(PORTF,LED_BLUE,GPIO_RESET);
-        RTOSDelay(10);
+        vTaskDelay(500);
+        ADC_GetTemp(&temp);
+        ADC_GetVoltage(1,&volt);
+        printf("T = %3d Volt %05.4fV \r\n", temp,volt );
+                 
     }
 }
+

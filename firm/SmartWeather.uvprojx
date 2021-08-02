@@ -436,6 +436,11 @@
               <FileType>1</FileType>
               <FilePath>.\application\hw_driver\uc_driver.c</FilePath>
             </File>
+            <File>
+              <FileName>adc_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\hw_driver\adc_driver.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
