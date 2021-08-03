@@ -45,13 +45,15 @@ static void BlinkLedFunc(void *param)
 	while (1)
     {
 				
-		GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
-        vTaskDelay(500);
-        GpioWriteLed(PORTF,LED_BLUE,GPIO_RESET);
-        vTaskDelay(500);
-        ADC_GetTemp(&temp);
-        ADC_GetVoltage(1,&volt);
-        printf("T = %3d Volt %05.4fV \r\n", temp,volt );
+		//GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
+      //  vTaskDelay(500);
+        //GpioWriteLed(PORTF,LED_BLUE,GPIO_RESET);
+        //vTaskDelay(500);
+        //ADC_GetTemp(&temp);
+				ADC_ReadProcess();
+        ADC_GetVoltage(TEMP_SENSOR,&volt);
+				printf("Volt %05.4fV \r\n",volt );
+        //printf("T = %3d Volt %05.4fV \r\n", temp,volt );
                  
     }
 }

@@ -18,17 +18,44 @@
 #include "WrapperRTOS.h"
 #include "adc_driver.h"
 
-void *ADCMutex = NULL; /**<Mutex to handle global values*/
-static adc_ret_e  ADC_ReadChannel(uint32_t channel, uint32_t *ad_value);
+static void *ADCMutex = NULL; /**<Mutex to handle global values*/
+
+
 const float RESOL_ADC = 4096.0F; /**< ADC resolution = 12 bits */
 const float VREF_ADC  = 3.3F;    /**< ADC reference voltage  3.3V */
+
+
+
+typedef struct 
+{
+    adc_channel_list_e  channel_label;
+    adc_enable_e enabled;
+    uint32_t adc_block;
+    uint32_t mode;
+    adc_seq_e sequ_num;
+    uint32_t trigger_mode;
+    uint32_t priority_sample_seq;
+    uint32_t adc_step;
+    
+}adc_driver_config_s;
+
+static uint32_t raw_value[AIN_QTY];
+
+
+static const adc_driver_config_s ADC_DRIVER_CONFIG [] = {
+
+    {.channel_label = TEMP_SENSOR,.enabled = ADC_ENABLED, .adc_block = ADC0_BASE, .mode = (ADC_CTL_TS | ADC_CTL_IE | ADC_CTL_END), .sequ_num = ADC_SS3,.trigger_mode = ADC_TRIGGER_PROCESSOR,.priority_sample_seq = 0,.adc_step =0}, 
+
+};
+
+static uint32_t       ConfiguredAdcsQty = 0; 
+
+
 adc_ret_e ADC_Init(void)
 {
-    adc_ret_e            ret       = ADC_RET_OK;
-    
+    adc_ret_e            ret       = ADC_RET_OK;  
     do
-    {		
-        
+    {	
         if (ADCMutex == NULL)
         {
             ADCMutex = RTOSMutexCreate();
@@ -38,36 +65,81 @@ adc_ret_e ADC_Init(void)
             ret = ADC_MUTEX_NULL;
             break;
         }
-		
-        SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
-        ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0);
-        ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_TS | ADC_CTL_IE | ADC_CTL_END);
-                            
-        ADCSequenceEnable(ADC0_BASE, 3); 
-        ADCIntClear(ADC0_BASE, 3);
-
-        
-    } while (0);
-
-    return ret;
-}
-
-adc_ret_e ADC_GetRaw(uint8_t channel, uint32_t *raw_value)
-{
-    adc_ret_e ret = ADC_RET_ERROR;
-    uint32_t  ad_raw_value;
-
-    do
-    {
-        
-        if (ADC_ReadChannel(1, &ad_raw_value) != ADC_RET_OK)
+        if(!RTOSMutexTake(ADCMutex))
         {
+            ret = ADC_MUTEX_TAKE_ERROR;
             break;
         }
 
-        *raw_value = ad_raw_value;
+        ConfiguredAdcsQty = sizeof(ADC_DRIVER_CONFIG) / sizeof(*ADC_DRIVER_CONFIG);
+        
+        for (uint8_t i= 0 ; i < ConfiguredAdcsQty; i++)
+        { 
+            adc_channel_list_e channel_label = ADC_DRIVER_CONFIG[i].channel_label;
+    
+            if(ADC_DRIVER_CONFIG[channel_label].enabled != ADC_ENABLED)
+            {
+                continue;
+            }
+            if (ADC_DRIVER_CONFIG[channel_label].adc_block == ADC0_BASE)
+            {
+                SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+            }
+            else if (ADC_DRIVER_CONFIG[channel_label].adc_block == ADC1_BASE)
+            {
+                SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC1);
+            }
+            ADCSequenceConfigure(ADC_DRIVER_CONFIG[channel_label].adc_block, 
+                                ADC_DRIVER_CONFIG[channel_label].sequ_num,
+                                ADC_DRIVER_CONFIG[channel_label].trigger_mode, 
+                                ADC_DRIVER_CONFIG[channel_label].priority_sample_seq);
+            ADCSequenceStepConfigure(ADC_DRIVER_CONFIG[channel_label].adc_block,
+                                    ADC_DRIVER_CONFIG[channel_label].sequ_num,
+                                    ADC_DRIVER_CONFIG[channel_label].adc_step,
+                                    ADC_DRIVER_CONFIG[channel_label].mode);                 
+            ADCSequenceEnable(ADC_DRIVER_CONFIG[channel_label].adc_block,ADC_DRIVER_CONFIG[channel_label].sequ_num);
+            ADCIntClear(ADC_DRIVER_CONFIG[channel_label].adc_block, ADC_DRIVER_CONFIG[channel_label].sequ_num);
+            raw_value[channel_label] = 0;
+        }
+        if (!RTOSMutexGive(ADCMutex))
+        {
+            ret = ADC_MUTEX_GIVE_ERROR;
+            break;
+        }
+        
+    }while (0);
+    
+    return ret;
+}
 
-        ret = ADC_RET_OK;
+adc_ret_e ADC_GetRaw(adc_channel_list_e channel, uint32_t *raw_value_ad)
+{
+    adc_ret_e ret = ADC_RET_OK;
+    do
+    {
+        if (ADCMutex == NULL)
+        {
+            ret = ADC_MUTEX_NULL;
+            break;
+        }
+        if (!RTOSMutexTake(ADCMutex))
+        {
+            ret = ADC_MUTEX_TAKE_ERROR;
+            break;
+        }
+        if (channel >=AIN_QTY)
+        {
+            *raw_value_ad =0;
+            ret= ADC_CHANNEL_INVALID;
+            break; 
+        }
+        *raw_value_ad = raw_value[channel];
+
+        if (!RTOSMutexGive(ADCMutex))
+        {
+            ret = ADC_MUTEX_GIVE_ERROR;
+            break;
+        }
 
     } while (0);
 
@@ -80,26 +152,41 @@ adc_ret_e ADC_GetRaw(uint8_t channel, uint32_t *raw_value)
  * @param voltage 
  * @return adc_ret_e 
  */
-adc_ret_e ADC_GetVoltage(uint8_t channel, float *voltage)
+adc_ret_e ADC_GetVoltage(adc_channel_list_e channel, float *voltage)
 {
-    adc_ret_e ret = ADC_RET_ERROR;
-    uint32_t  ad_raw_value;
+    adc_ret_e ret = ADC_RET_OK;
 
     do
     {
-        if (ADC_ReadChannel(1, &ad_raw_value) != ADC_RET_OK)
+        if (ADCMutex == NULL)
         {
+            ret = ADC_MUTEX_NULL;
             break;
         }
+        if (!RTOSMutexTake(ADCMutex))
+        {
+            ret = ADC_MUTEX_TAKE_ERROR;
+            break;
+        }
+        if (channel >=AIN_QTY)
+        {
+            *voltage =0.0;
+            ret= ADC_CHANNEL_INVALID;
+            break; 
+        }
+        *voltage = (((float)raw_value[channel] * VREF_ADC) / RESOL_ADC);
 
-        *voltage = (((float)ad_raw_value * VREF_ADC) / RESOL_ADC);
-
-        ret = ADC_RET_OK;
+         if (!RTOSMutexGive(ADCMutex))
+        {
+            ret = ADC_MUTEX_GIVE_ERROR;
+            break;
+        }
 
     } while (0);
 
     return ret;
 }
+
 
 /**
  * @brief 
@@ -108,7 +195,7 @@ adc_ret_e ADC_GetVoltage(uint8_t channel, float *voltage)
  * @param ad_value 
  * @return adc_ret_e 
  */
-static adc_ret_e ADC_ReadChannel(uint32_t channel, uint32_t *ad_value)
+adc_ret_e ADC_ReadProcess(void)
 {
     adc_ret_e              ret     = ADC_RET_OK;
     do
@@ -124,18 +211,27 @@ static adc_ret_e ADC_ReadChannel(uint32_t channel, uint32_t *ad_value)
             ret = ADC_MUTEX_TAKE_ERROR;
             break;
         }
-        ADCProcessorTrigger(ADC0_BASE, 3);
-        while(!ADCIntStatus(ADC0_BASE, 3, false))
-        {
+        for (uint8_t i= 0 ; i < ConfiguredAdcsQty; i++)
+        { 
+            adc_channel_list_e channel_label = ADC_DRIVER_CONFIG[i].channel_label;
+            
+            if(ADC_DRIVER_CONFIG[channel_label].enabled == ADC_ENABLED)
+            {
+                ADCProcessorTrigger(ADC_DRIVER_CONFIG[channel_label].adc_block,ADC_DRIVER_CONFIG[channel_label].sequ_num);
+                while(!ADCIntStatus(ADC_DRIVER_CONFIG[channel_label].adc_block, ADC_DRIVER_CONFIG[channel_label].sequ_num, false))
+                {
+                }
+                ADCIntClear(ADC_DRIVER_CONFIG[channel_label].adc_block,ADC_DRIVER_CONFIG[channel_label].sequ_num);
+                ADCSequenceDataGet(ADC_DRIVER_CONFIG[channel_label].adc_block,ADC_DRIVER_CONFIG[channel_label].sequ_num, &raw_value[channel_label]); 
+            }
         }
-        ADCIntClear(ADC0_BASE, 3);
-        ADCSequenceDataGet(ADC0_BASE, 3, ad_value);
-       
+
         if(!RTOSMutexGive(ADCMutex))
         {
             ret = ADC_MUTEX_GIVE_ERROR;
             break;
         }
+
         ret = ADC_RET_OK;
         
     } while (0);
@@ -152,20 +248,29 @@ static adc_ret_e ADC_ReadChannel(uint32_t channel, uint32_t *ad_value)
  */
 adc_ret_e ADC_GetTemp(uint32_t *temperature)
 {
-    adc_ret_e ret = ADC_RET_ERROR;
+    adc_ret_e ret = ADC_RET_OK;
     do
     {
-        uint32_t ad_raw_value[1];
-			
-        if (ADC_ReadChannel(1,  ad_raw_value) != ADC_RET_OK)
+        if (ADCMutex == NULL)
         {
+            ret = ADC_MUTEX_NULL;
             break;
         }
-        
-         *temperature = ((1475 * 1023) - (2250 * ad_raw_value[0])) / 10230;
+        if (!RTOSMutexTake(ADCMutex))
+        {
+            ret = ADC_MUTEX_TAKE_ERROR;
+            break;
+        }
 
-        ret = ADC_RET_OK;
+        *temperature = ((1475 * 1023) - (2250 * raw_value[TEMP_SENSOR])) / 10230;
+        if(!RTOSMutexGive(ADCMutex))
+        {
+            ret = ADC_MUTEX_GIVE_ERROR;
+            break;
+        }
+
     } while (0);
 
     return ret;
 }
+
