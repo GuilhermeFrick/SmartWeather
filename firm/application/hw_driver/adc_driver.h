@@ -33,7 +33,7 @@ typedef enum
 
 typedef enum
 {
-    AIN0,
+    /*AIN0,
     AIN1,
     AIN2,
     AIN3,
@@ -44,7 +44,7 @@ typedef enum
     AIN8,
     AIN9,
     AIN10,
-    AIN11,
+    AIN11,*/
     TEMP_SENSOR,
     AIN_QTY
 }adc_channel_list_e;

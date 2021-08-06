@@ -77,29 +77,33 @@ adc_ret_e ADC_Init(void)
         { 
             adc_channel_list_e channel_label = ADC_DRIVER_CONFIG[i].channel_label;
     
-            if(ADC_DRIVER_CONFIG[channel_label].enabled != ADC_ENABLED)
+            if(ADC_DRIVER_CONFIG[channel_label].enabled == ADC_ENABLED)
             {
-                continue;
-            }
-            if (ADC_DRIVER_CONFIG[channel_label].adc_block == ADC0_BASE)
-            {
-                SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
-            }
-            else if (ADC_DRIVER_CONFIG[channel_label].adc_block == ADC1_BASE)
-            {
-                SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC1);
-            }
-            ADCSequenceConfigure(ADC_DRIVER_CONFIG[channel_label].adc_block, 
-                                ADC_DRIVER_CONFIG[channel_label].sequ_num,
-                                ADC_DRIVER_CONFIG[channel_label].trigger_mode, 
-                                ADC_DRIVER_CONFIG[channel_label].priority_sample_seq);
-            ADCSequenceStepConfigure(ADC_DRIVER_CONFIG[channel_label].adc_block,
+               
+                if (ADC_DRIVER_CONFIG[channel_label].adc_block == ADC0_BASE)
+                {
+                    SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+                }
+                else if (ADC_DRIVER_CONFIG[channel_label].adc_block == ADC1_BASE)
+                {
+                    SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC1);
+                }
+                
+                ADCSequenceConfigure(ADC_DRIVER_CONFIG[channel_label].adc_block, 
                                     ADC_DRIVER_CONFIG[channel_label].sequ_num,
-                                    ADC_DRIVER_CONFIG[channel_label].adc_step,
-                                    ADC_DRIVER_CONFIG[channel_label].mode);                 
-            ADCSequenceEnable(ADC_DRIVER_CONFIG[channel_label].adc_block,ADC_DRIVER_CONFIG[channel_label].sequ_num);
-            ADCIntClear(ADC_DRIVER_CONFIG[channel_label].adc_block, ADC_DRIVER_CONFIG[channel_label].sequ_num);
+                                    ADC_DRIVER_CONFIG[channel_label].trigger_mode, 
+                                    ADC_DRIVER_CONFIG[channel_label].priority_sample_seq);
+                ADCSequenceStepConfigure(ADC_DRIVER_CONFIG[channel_label].adc_block,
+                                        ADC_DRIVER_CONFIG[channel_label].sequ_num,
+                                        ADC_DRIVER_CONFIG[channel_label].adc_step,
+                                        ADC_DRIVER_CONFIG[channel_label].mode);                 
+                ADCSequenceEnable(ADC_DRIVER_CONFIG[channel_label].adc_block,ADC_DRIVER_CONFIG[channel_label].sequ_num);
+                ADCIntClear(ADC_DRIVER_CONFIG[channel_label].adc_block, ADC_DRIVER_CONFIG[channel_label].sequ_num);
+               
+            }
+
             raw_value[channel_label] = 0;
+
         }
         if (!RTOSMutexGive(ADCMutex))
         {

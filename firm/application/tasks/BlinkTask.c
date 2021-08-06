@@ -40,20 +40,14 @@ void BlinkTaskCreate(void)
 
 static void BlinkLedFunc(void *param)
 {
-    uint32_t temp;
-    float volt;
+  printf("Iniciando tarefa blink \n\r");
 	while (1)
     {
 				
-		//GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
-      //  vTaskDelay(500);
-        //GpioWriteLed(PORTF,LED_BLUE,GPIO_RESET);
-        //vTaskDelay(500);
-        //ADC_GetTemp(&temp);
-				ADC_ReadProcess();
-        ADC_GetVoltage(TEMP_SENSOR,&volt);
-				printf("Volt %05.4fV \r\n",volt );
-        //printf("T = %3d Volt %05.4fV \r\n", temp,volt );
+		    GpioWriteLed(PORTF,LED_BLUE,GPIO_SET);
+        vTaskDelay(500);
+        GpioWriteLed(PORTF,LED_BLUE,GPIO_RESET);
+        vTaskDelay(500);
                  
     }
 }
